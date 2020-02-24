@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exchange Rates & Currency Conversion</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.4.6/css/flag-icon.min.css">
+    <link rel="stylesheet" href="../scss/style.css">
+
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div id="header" class="col">
+                <h2>Header</h2>
+                
+                <select id="selectCountry" name="Select country">
+                    
+                  </select>
+                
+                <select id="month" name="month">
+                    <option value="01">January 01</option>
+                    <option value="02">February 02</option>
+                    <option value="03">March 03</option>
+                    <option value="04">April 04</option>
+                    <option value="05">May 05</option>
+                    <option value="06">June 06</option>
+                    <option value="07">July 07</option>
+                    <option value="08">August 08</option>
+                    <option value="09">September 09</option>
+                    <option value="10">October 10</option>
+                    <option value="11">November 11</option>
+                    <option value="12">December 12</option>
+                  </select>
+                  <select id="year" name="year">
+                    <option value="2019">2019</option>
+                    <option value="2018">2018</option>
+                    <option value="2017">2017</option>
+                    <option value="2016">2016</option>
+                    <option value="2015">2015</option>
+                  </select>
+                <button onclick="historicalData(),historicalChart()">search</button>
+
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-1">
+                <div class="row" style="height:100%">
+                <div id="currency">
+                    <h1>USD Rate</h1>
+                    <div class="countries">
+                    <ul id="test"></ul>
+                    </div>
+                </div>
+                </div>
+            </div>
+            <div class="col" style="height: 780px;">
+                <div id="chartContainer" style="height: 50%; width: 100%;"></div><br>
+                <p id="n"></p>
+                <div id="chartContainer2" style="height: 50%; width: 100%;"></div>
+                <p></p>
+            </div>
+            <div class="col-sm-2">
+                <div class="row" style="height:50%;">
+                <div class="tradeSection">
+                    <h2>Buy</h2>
+                    <input id="coin">
+                    <input id="Amount">
+                    <div id="tradeData">
+                    <p>Balance: 0 </p>
+                    <p>Price per unit: 2.80</p>
+                    <p>Fee: 0.1%</p>
+                    <p>Total:</p>
+                    </div>
+                    <button>Display transaction details</button>
+                    <button>Finish transaction</button>
+                </div>
+                </div>
+                <div class="row" style="height:50%;">
+                    <div class="tradeSection">
+                        <h2>Sell</h2>
+                        <input id="coin">
+                        <input type="number" id="Amount">
+                        <div id="tradeData">
+                        <p>Balance: 0 </p>
+                        <p>Price per unit: 2.80</p>
+                        <p>Fee: 0.1%</p>
+                        <p>Total:</p>
+                        </div>
+                        <button>Display transaction details</button>
+                        <button>Finish transaction</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col" style="height: 100px;">
+                <h2>Footer</h2>
+            </div>
+        </div>
+    </div>
+    <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+    <script>
+        function usdRate() {
+            url = 'http://api.currencylayer.com/live?access_key=25725a8b6cb541549b15349c7148a1bf&format=1'
+            let html = []
+            let html2 = []
+            fetch(url)
+                .then((resp) => resp.json())
+                .then(function (data) {
+                    for(i=0;i<168;i++){
+            
+                    html.push( 
+                    '<li><div class="flag flag-icon-'+ 
+                    Object.keys(data.quotes)[i].substring(3,5).toLowerCase() +
+                    '"></div><p class="countryName" id="'+ 
+                    Object.keys(data.quotes)[i].substring(3) +
+                    '">' + Object.keys(data.quotes)[i].substring(3)  + 
+                    '</p><p class="countryCurrency" >' + 
+                    Math.round((Object.values(data.quotes)[i] + 
+                    Number.EPSILON) * 100) / 100 +
+                    '</p></li>'
+                    )
+                    html2.push(
+                        '<option value="' + i + '">' + Object.keys(data.quotes)[i].substring(3) + '</option>'
+                    )
+                    
+                }
+                    document.getElementById("test").innerHTML= html
+                    document.getElementById("selectCountry").innerHTML= html2
+                })
+                
+                .catch(function (error) {
+                    console.log(error);
+                });
+        }
+        
+        function historicalData(){
+        let year = document.getElementById('year').value
+        let month = document.getElementById('month').value
+        let country = document.getElementById('selectCountry').value
+        console.log(year)
+        let arr = []
+        for(i=1;i<31;i++){
+        if (i<10){
+        let url = 'http://api.currencylayer.com/historical?access_key=25725a8b6cb541549b15349c7148a1bf&date=' + year +'-' + month + '-0'+ i
+        
+        fetch(url) 
+        .then((resp) => resp.json())
+        .then(function (data) {
+            console.log(url)
+            arr.push(Object.values(data.quotes)[country])
+            console.log(Object.values(data.quotes)[country])
+        })
+        .catch(function (error) {console.log(error);})
+        } else {
+        let url = 'http://api.currencylayer.com/historical?access_key=25725a8b6cb541549b15349c7148a1bf&date=' + year + '-' + month + '-'+ i
+        
+        fetch(url) 
+        .then((resp) => resp.json())
+        .then(function (data) {
+            console.log(url)
+            arr.push(Object.values(data.quotes)[country])
+            console.log(Object.values(data.quotes)[country])
+        })
+        .catch(function (error) {console.log(error);})
+        } } console.log(arr)
+        return arr
+    }
+
+    
+
+
+    function historicalChart(){
+        let year = document.getElementById('year').value
+        let month = document.getElementById('month').value
+        let chart = new CanvasJS.Chart("chartContainer", {
+                   
+                   backgroundColor: "rgb(48,48,48)",
+                   theme: "dark2",
+                   title:{
+                           text:"Daily rate"
+                   },
+                   axisX:{
+                           interval: 1
+                   },
+                   axisY2:{
+                           interlacedColor: "rgba(1,77,101,.2)",
+                           gridColor: "rgba(1,77,101,.1)",
+                           title: "Number of Companies",      
+                   },
+                   axisY:{
+                       minimum: 0,
+                       inteval:1,
+                   },
+                   data: [{
+                           type: "spline",
+                           color: "#014D65",
+                           dataPoints: [
+                               { y: 3.9, label: "01/" + month },
+                               { y: 4.0, label: "02/" + month },
+                               { y: 4.5, label: "03/" + month },
+                               { y: 4.3, label: "04/" + month },
+                               { y: 3.4, label: "05/" + month },
+                               { y: 3, label: "06/" + month },
+                               { y: 2.75, label: "07/" + month },
+                               { y: 2.5, label: "08/" + month },
+                               { y: 3.6, label: "09/" + month },
+                               { y: 3.7, label: "10/" + month },
+                               { y: 3.8, label: "11/" + month },
+                               { y: 3.5, label: "12/" + month },
+                               { y: 4.2, label: "13/" + month },
+                               { y: 4.7, label: "14/" + month },
+                               { y: 5.2, label: "15/" + month },
+                               { y: 5.5, label: "16/" + month },
+                               { y: 5.8, label: "17/" + month },
+                               { y: 6, label: "18/" + month },
+                               { y: 5.8, label: "19/" + month },
+                               { y: 6.2, label: "20/" + month },
+                               { y: 6.4, label: "21/" + month },
+                               { y: 6.2, label: "22/" + month },
+                               { y: 6.4, label: "23/" + month },
+                               { y: 6.8, label: "24/" + month },
+                               { y: 7, label: "25/" + month },
+                               { y: 6.4, label: "26/" + month },
+                               { y: 6.2, label: "27/" + month },
+                               { y: 5.8, label: "28/" + month },
+                               { y: 5.5, label: "29/" + month },
+                               { y: 6, label: "30/" + month }
+
+                           ]
+                       }]
+
+
+
+               })
+        let chart2 = new CanvasJS.Chart("chartContainer2", {
+                   
+                   backgroundColor: "rgb(48,48,48)",
+                   theme: "dark2",
+                   title:{
+                           text:"Monthly rate"
+                   },
+                   axisX:{
+                           interval: 1
+                   },
+                   axisY2:{
+                           interlacedColor: "rgba(1,77,101,.2)",
+                           gridColor: "rgba(1,77,101,.1)",
+                           title: "Number of Companies",      
+                   },
+                   axisY:{
+                       minimum: 0,
+                       inteval:1,
+                   },
+                   data: [{
+                           type: "spline",
+                           color: "#014D65",
+                           dataPoints: [
+                               { y: 5, label: month + '/' + year },
+                               { y: 5.5, label: month + '/' + year },
+                               { y: 6, label: month + '/' + year },
+                               { y: 6.2, label: month + '/' + year },
+                               { y: 5.8, label: month + '/' + year },
+                               { y: 5.5, label: month + '/' + year },
+                               { y: 5.2, label: month + '/' + year },
+                               { y: 4.8, label: month + '/' + year },
+                               { y: 5.2, label: month + '/' + year },
+                               { y: 6, label: month + '/' + year },
+                               { y: 5.5, label: month + '/' + year },
+                               { y: 5.8, label: month + '/' + year }
+
+                           ]
+                       }]
+
+
+
+               })
+    }
+    window.onload = usdRate()
+    </script>
+
+</body>
+
+</html>
